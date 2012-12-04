@@ -47,11 +47,11 @@ Install:
     
     # Then:
 
-    sm clone --dev https://github.com/ajaxorg/cloud9/tree/master cloud9
+    sm clone --dev https://github.com/jscrobinson/cloud9/tree/master cloud9
     
     # or
     
-    git clone https://github.com/ajaxorg/cloud9.git cloud9
+    git clone https://github.com/jscrobinson/cloud9.git cloud9
     cd cloud9
     sm install
     
