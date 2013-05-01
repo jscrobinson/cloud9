@@ -21,6 +21,7 @@ var markup = require("text!ext/console/console.xml");
 var theme = require("text!ext/console/themes/arthur.css");
 var inputHistory = require("ext/console/input_history");
 var anims = require("ext/anims/anims");
+var preview = require("ext/preview/preview");
 
 // Some constants used throughout the plugin
 var KEY_TAB = 9, KEY_CR = 13, KEY_UP = 38, KEY_ESC = 27, KEY_DOWN = 40;
@@ -96,11 +97,14 @@ module.exports = ext.register("ext/console/console", {
     },
 
     recreateLogStreamBlocks: function(serverProcs) {
+        var runners = window.cloud9config.runners;
         for (var spi in serverProcs) {
             if (this.pidToTracerMap[spi])
                 continue;
 
             var proc = serverProcs[spi];
+            if (runners.indexOf(proc.type) === -1)
+                continue;
 
             var original_line;
             var command_id;
@@ -434,6 +438,9 @@ module.exports = ext.register("ext/console/console", {
             extra = message.body.extra;
 
         if (extra) {
+            // leave its handling to linereport plugin
+            if (extra.linereport_id)
+                return;
             // If true, this client is receiving data about a command that did
             // not originate from it
             if (extra.command_id >= this.command_id_tracer)
@@ -451,7 +458,8 @@ module.exports = ext.register("ext/console/console", {
             this.createProcessLog(message.pid, lang[1]);
             return;
         } else if ((lang = /^([\w-]+)-web-start$/.exec(message.type)) && runners.indexOf(lang[1]) >= 0) {
-            require("ext/preview/preview").preview(message.url);
+            if (apf.isTrue(settings.model.queryValue("preview/@running_app")) || preview.isVisible())
+                preview.preview(message.url);
         } else if ((lang = /^(\w+)-data$/.exec(message.type)) && runners.indexOf(lang[1]) >= 0) {
             if (message.extra && message.extra.tip) {
                 message.data = "\u001b[1;32;40m" + message.data;
